@@ -1,2 +1,5 @@
 datasets/*
 .idea/*
+models/__pycache__
+wandb
+.ipynb_checkpoints

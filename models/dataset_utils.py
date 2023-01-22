@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 import os
 from PIL import Image
+import random
 
 
 class BaseDataset(Dataset):
@@ -24,6 +25,11 @@ class BaseDataset(Dataset):
         return [os.path.join(self.root_dir, i)
                 for i in os.listdir(self.root_dir)]
 
+    def get_random_samples(self, number=9):
+        random_imgs = random.sample(self.img_paths, number)
+        random_imgs = [Image.open(i) for i in random_imgs]
+        return random_imgs
+
 
 class IAMDataset(BaseDataset):
     """
@@ -36,3 +42,4 @@ class IAMDataset(BaseDataset):
 
 
 if __name__ == "__main__":
+    pass
