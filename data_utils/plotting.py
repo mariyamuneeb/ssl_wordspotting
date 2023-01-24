@@ -14,7 +14,7 @@ def plot_samples(dataset, num_samples):
 
 
 ## Plotting Samples During Training
-def plot_ae_custom_ds_outputs(encoder, decoder, test_dataset, n=10):
+def plot_reconstructions(encoder, decoder, test_dataset, device,n=10):
     wandb_imgs = list()
     wandb_rec_imgs = list()
     my_table = wandb.Table(columns=["Original", "Reconstruction"])
