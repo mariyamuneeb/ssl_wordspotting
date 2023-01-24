@@ -36,11 +36,3 @@ def get_images_paths(paths, dest):
     print(sumt)
     print(sum(sumt))
     print(f"copied {sumj} images")
-    # img = img1 + img2 + img3
-    # return img
-
-
-if __name__ == "__main__":
-    get_images_paths(IEHRTE, DESTE)
-    # print(len(os.listdir(DEST)))
-    # print(len(paths))
