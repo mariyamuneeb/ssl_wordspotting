@@ -23,13 +23,20 @@ def connect_to_gdrive():
     GDRIVE_ROOT = '/content/drive/MyDrive'
     return GDRIVE_ROOT
 
+
 def copy_iam_dataset_to_colab():
+    ## copied IAM Dataset from Gdrive to colab
+    print("Copying IAM Dataset from GDrive")
     GDRIVE_ROOT = connect_to_gdrive()
     DATASET_ROOT = f"{GDRIVE_ROOT}/Datasets"
     dataset_zip = f'{DATASET_ROOT}/IAM_HW/words_full_dataset.zip'
     dest_zip = '/content/ssl_wordspotting/words_full_dataset.zip'
     shutil.copy(dataset_zip, dest_zip)
-    os.mkdir('/content/ssl_wordspotting/data')
+    if not os.path.isfile(dest_zip):
+        raise FileNotFoundError(f"{dest_zip} file not found")
+    else:
+        print("IAM Dataset Zip now copied")
+    os.mkdir('/content/ssl_wordspotting/iam_data')
     with zipfile.ZipFile(dest_zip, 'r') as zip_ref:
         zip_ref.extractall('/content/ssl_wordspotting/data')
 
