@@ -1,5 +1,7 @@
-import os
 import shutil
+import os
+import zipfile
+from google.colab import drive
 
 CWD = os.getcwd()
 print(CWD)
@@ -13,6 +15,23 @@ DESTE = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/full_datas
 
 IEHRTR = [IEHR1, IEHR2, IEHR3]
 IEHRTE = [IEHRTest]
+
+
+def connect_to_gdrive():
+    # connects to gdrive and returns root of gdrive
+    drive.mount('/content/drive')
+    GDRIVE_ROOT = '/content/drive/MyDrive'
+    return GDRIVE_ROOT
+
+def copy_iam_dataset_to_colab():
+    GDRIVE_ROOT = connect_to_gdrive()
+    DATASET_ROOT = f"{GDRIVE_ROOT}/Datasets"
+    dataset_zip = f'{DATASET_ROOT}/IAM_HW/words_full_dataset.zip'
+    dest_zip = '/content/ssl_wordspotting/words_full_dataset.zip'
+    shutil.copy(dataset_zip, dest_zip)
+    os.mkdir('/content/ssl_wordspotting/data')
+    with zipfile.ZipFile(dest_zip, 'r') as zip_ref:
+        zip_ref.extractall('/content/ssl_wordspotting/data')
 
 
 def get_images_paths(paths, dest):
