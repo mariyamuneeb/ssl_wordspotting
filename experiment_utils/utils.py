@@ -42,3 +42,10 @@ def test_epoch(vae, device, dataloader):
     val_loss_ave = val_loss / len(dataloader.dataset)
     wandb.log({"val_loss": val_loss_ave})
     return val_loss_ave
+
+
+def save_checkpoint(epoch, model_state_dict,optimizer_state_dict,loss,path):
+    pass
+
+def load_checkpoint(path):
+    return torch.load(path)

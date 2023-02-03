@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import wandb
-import torch
 import numpy as np
 
 
