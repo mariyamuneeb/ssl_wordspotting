@@ -62,3 +62,16 @@ def get_images_paths(paths, dest):
     print(sumt)
     print(sum(sumt))
     print(f"copied {sumj} images")
+
+
+
+
+
+
+
+
+
+
+
+
+

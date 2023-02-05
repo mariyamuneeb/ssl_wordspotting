@@ -57,3 +57,5 @@ def mean_average_precision(model, x_test, y_test, transcripts):
     print("Total test cases = ", N)
 
 
+# load data and corresponding transcripts
+# 
