@@ -29,7 +29,7 @@ def copy_iam_dataset_to_colab():
     print("Copying IAM Dataset from GDrive")
     GDRIVE_ROOT = connect_to_gdrive()
     DATASET_ROOT = f"{GDRIVE_ROOT}/Datasets"
-    dataset_zip = f'{DATASET_ROOT}/IAM_HW/words_full_dataset.zip'
+    dataset_zip = f'{DATASET_ROOT}/IEHR/words_full_dataset.zip'
     dest_zip = '/content/ssl_wordspotting/words_full_dataset.zip'
     shutil.copy(dataset_zip, dest_zip)
     if not os.path.isfile(dest_zip):
