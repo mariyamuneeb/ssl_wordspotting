@@ -1,11 +1,16 @@
-from torch.utils.data import Dataset
+import pathlib
+
+from torch.utils.data import Dataset, DataLoader
 import os
-# from PIL import Image
-# import random
+from PIL import Image
+import random
 # import pathlib
 import logging
 from paths import IAM_XML_DIR, IAM_DIR, IAM_RULE_DIR, IAM_WORDS_DIR
 from xml.etree import ElementTree as ET
+from datetime import datetime
+import numpy as np
+import glob
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,6 +41,7 @@ class BaseDataset(Dataset):
         random_imgs = [Image.open(i) for i in random_imgs]
         return random_imgs
 
+
 #
 class IAMDataset(BaseDataset):
     """
@@ -47,8 +53,16 @@ class IAMDataset(BaseDataset):
     pass
 
 
+## images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
+## l1 -  sample_group_root_dir
+## l1-l2 - sample_group_dir
+## rules : l1-l2-ldx - sample_sub_group
+## xml : l1-l2-ldx-idx - sample_name
+
+
 class IAMDataset2(Dataset):
     def __init__(self, ttype, transform=None):
+        self.transform = transform
         self.ttype = ttype
         if ttype == 'train':
             self.rule_file_path = IAM_RULE_DIR / "trainset.txt"
@@ -56,60 +70,84 @@ class IAMDataset2(Dataset):
             self.rule_file_path = IAM_RULE_DIR / "testset.txt"
         elif ttype == 'val':
             self.rule_file_path = IAM_RULE_DIR / "validationset1.txt"
+        self.line_folders = None
+        self.line_folders, self.line_dirs = self.create_line_dirs()
+        self.samples = self.get_word_transcripts()
 
-    # def _xml_file_parsing(self):
-    #     return transcripts
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path,transcript = self.samples[idx]
+        image = Image.open(img_path)
+        if self.transform:
+            image = self.transform(image)
+
+        return image, transcript
+
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
         root = tree.getroot()
         return root
 
-    def create_samples(self):
-        dir_paths = self.create_dir_paths()
-        samples = list()
-        for sample_name, dir_path in dir_paths:
-            print(sample_name,dir_path)
-            image_names = list(dir_path.glob('*.png'))
-            xml_file_name = f'{dir_path.name}.xml'
-            xml_file_path = IAM_XML_DIR / xml_file_name
-            root = self.get_xml_file_object(xml_file_path)
-            filtered_image_paths = [i for i in image_names if sample_name in i.name]
-            filtered_image_names = [i.name for i in filtered_image_paths]
-            image_names_0 = [i.split('.')[0] for i in filtered_image_names]
+    def get_word_transcripts(self):
+        word_ids, word_paths = self.get_words()
+
+        word_ids, xml_paths = self.construct_xml_file_paths(word_ids)
+        ll = list()
+        for word_id, xml_path in zip(word_ids, xml_paths):
+            root = self.get_xml_file_object(xml_path)
             for word in root.iter('word'):
-                text = word.get('text')
-                id = word.get('id')
-                idx = image_names_0.index(id)
-                samples.append((filtered_image_paths[idx], text))
+                img_id = word.get('id')
+                if img_id == word_id:
+                    trascript = word.get('text')
+                    ll.append((word_id, trascript))
+        return ll
 
-        return samples
+    def construct_xml_file_paths(self, word_ids):
+        xml_paths = ['-'.join(i.split('-')[:-2]) + '.xml' for i in word_ids]
+        xml_paths = [IAM_XML_DIR / i for i in xml_paths]
+        return word_ids, xml_paths
 
-    def create_xml_paths(self):
-        dir_names = self.sample_names()
-        xml_names = [i.split('-')[:-1] for i in dir_names]
-        xml_file_names = list(dict.fromkeys(['-'.join(map(str, i)) + '.xml' for i in xml_names]))
-        xml_file_paths = [IAM_XML_DIR / i for i in xml_file_names]
-        return xml_file_paths
+    def get_words(self):
+        # print(len(sample_group_dir))
 
-    def create_dir_paths(self):
-        sample_names = self.sample_names()
-        dir_paths = list()
-        for sample_name in sample_names:
-            splits = sample_name.split('-')
-            l1 = splits[0]
-            l2 = '-'.join(splits[:-1])
-            dir_path = IAM_WORDS_DIR / l1 / l2
-            dir_paths.append((sample_name, dir_path))
-        logging.info(f"{len(dir_paths)} dirs for {self.ttype} set")
-        # print(dir_paths)
-        return dir_paths
+        image_paths = [glob.glob(f"{i}/*.png") for i in self.line_dirs]
+        # print(sample_file_paths)
 
-    def sample_names(self):
+        image_paths = [item for sublist in image_paths for item in sublist]
+
+        line_ids = self.read_line_ids()
+
+        word_paths = [i for i in image_paths if '-'.join(pathlib.Path(i).name.split('-')[:-1])
+                      in line_ids]
+        word_ids = [pathlib.Path(i).name.split('.')[0] for i in word_paths]
+
+        return word_ids, word_paths
+        #
+
+    def create_line_dirs(self):
+        ## images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
+        ## l1 -  sample_group_root_dir
+        ## l1-l2 - line_folders
+        ## rules : l1-l2-ldx - line_ids
+        ## xml file name: l1-l2.xml
+        ## xml : l1-l2-ldx-idx - sample_name
+        line_ids = self.read_line_ids()
+        line_folders = [f"{i.split('-')[0]}-{i.split('-')[1]}" for i in line_ids]
+        line_folders = list(dict.fromkeys(line_folders))
+        line_dirs = [IAM_WORDS_DIR / i.split('-')[0] / f"{i.split('-')[0]}-{i.split('-')[1]}"
+                     for i in line_ids]
+        line_dirs = list(dict.fromkeys(line_dirs))
+        return line_folders, line_dirs
+
+    def read_line_ids(self):
+        # this method reads the rules.txt files and
+        # returns its contents sample_sub_groups
         with open(self.rule_file_path) as f:
-            dir_names = f.readlines()
-            dir_names = [i.replace('\n', '').strip() for i in dir_names]
-        logging.info(f"{len(dir_names)} dirs for {self.ttype} set")
-        return dir_names
+            line_ids = [i.replace('\n', '').strip() for i in f.readlines()]
+        logging.info(f"{len(line_ids)} dirs for {self.ttype} set")
+        return line_ids
 
     def image_names(self, dir_path):
         image_names = os.listdir(dir_path)
@@ -117,10 +155,7 @@ class IAMDataset2(Dataset):
 
 
 if __name__ == "__main__":
-    lms = IAMDataset2(ttype='test').create_xml_paths()
-    ims = IAMDataset2(ttype='test').create_dir_paths()
-    sms = IAMDataset2(ttype='test').create_samples()
-    print(sms[:10])
-
-    # print(lms[:10])
-    # print(ims[:20])
+    dataset = IAMDataset2(ttype='test')
+    x,y = dataset[1]
+    print(type(x))
+    print(y)
