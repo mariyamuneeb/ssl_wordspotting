@@ -78,12 +78,11 @@ class IAMDataset2(Dataset):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        img_path,transcript = self.samples[idx]
-        image = Image.open(img_path)
+        img_id, img_path, transcript = self.samples[idx]
+        img = Image.open(img_path)
         if self.transform:
-            image = self.transform(image)
-
-        return image, transcript
+            img = self.transform(img)
+        return img_id, img, transcript
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
@@ -95,13 +94,13 @@ class IAMDataset2(Dataset):
 
         word_ids, xml_paths = self.construct_xml_file_paths(word_ids)
         ll = list()
-        for word_id, xml_path in zip(word_ids, xml_paths):
+        for word_id, word_path, xml_path in zip(word_ids, word_paths, xml_paths):
             root = self.get_xml_file_object(xml_path)
             for word in root.iter('word'):
                 img_id = word.get('id')
                 if img_id == word_id:
-                    trascript = word.get('text')
-                    ll.append((word_id, trascript))
+                    transcript = word.get('text')
+                    ll.append((word_id, word_path, transcript))
         return ll
 
     def construct_xml_file_paths(self, word_ids):
@@ -156,6 +155,7 @@ class IAMDataset2(Dataset):
 
 if __name__ == "__main__":
     dataset = IAMDataset2(ttype='test')
-    x,y = dataset[1]
-    print(type(x))
-    print(y)
+    x, y,z = dataset[1]
+    print(x)
+    print(type(y))
+    print(z)

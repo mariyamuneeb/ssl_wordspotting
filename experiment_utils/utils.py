@@ -1,5 +1,5 @@
 import wandb
-
+import torch
 
 def train_epoch(vae, device, dataloader, optimizer):
     # Set train mode for both the encoder and the decoder
@@ -20,6 +20,7 @@ def train_epoch(vae, device, dataloader, optimizer):
         # Print batch loss
         # print('\t partial train loss (single batch): %f' % (loss.item()))
         train_loss += loss.item()
+
     train_loss_ave = train_loss / len(dataloader.dataset)
     wandb.log({"train_loss": train_loss_ave})
     return train_loss_ave
