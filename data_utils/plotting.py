@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import wandb
 import numpy as np
+import torch
 
 
 ## Plotting Few Samples
