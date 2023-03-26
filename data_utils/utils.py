@@ -5,13 +5,13 @@ from google.colab import drive
 
 CWD = os.getcwd()
 print(CWD)
-IEHR = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR"
+IEHR = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR"
 IEHR3 = f"{IEHR}/IEHHR_training_part3"
 IEHR2 = f"{IEHR}/IEHHR_training_part2"
 IEHR1 = f"{IEHR}/IEHHR_training_part1"
 IEHRTest = f"{IEHR}/IEHHR_test"
-DESTR = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/full_dataset"
-DESTE = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/full_dataset_test"
+DESTR = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/full_dataset"
+DESTE = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/full_dataset_test"
 
 IEHRTR = [IEHR1, IEHR2, IEHR3]
 IEHRTE = [IEHRTest]

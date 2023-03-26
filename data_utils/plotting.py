@@ -4,6 +4,11 @@ import numpy as np
 import torch
 
 
+## Describe dataset
+def describe_dataset(dataset, name='train'):
+    print(f"{name} dataset has {len(dataset)} samples")
+
+
 ## Plotting Few Samples
 def plot_samples(dataset, num_samples):
     random_imgs = dataset.get_random_samples(num_samples)
@@ -49,7 +54,7 @@ def plot_reconstructions(encoder, decoder, test_dataset, device, dataset_name, n
 
 
 ## Plotting Samples During Training for Standard Datasets like CIFAR and MNIST
-def plot_reconstructions_sd(encoder, decoder, test_dataset, device, dataset_name,n=10):
+def plot_reconstructions_sd(encoder, decoder, test_dataset, device, dataset_name, n=10):
     wandb_imgs = list()
     wandb_rec_imgs = list()
     my_table = wandb.Table(columns=["Original", "Reconstruction"])

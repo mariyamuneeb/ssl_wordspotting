@@ -1,4 +1,4 @@
-datasets/*
+data/*
 .idea/*
 models/__pycache__
 wandb

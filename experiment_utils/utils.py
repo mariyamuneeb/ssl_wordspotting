@@ -1,6 +1,7 @@
 import wandb
 import torch
 
+
 def train_epoch(vae, device, dataloader, optimizer):
     # Set train mode for both the encoder and the decoder
     vae.train()
@@ -45,8 +46,9 @@ def test_epoch(vae, device, dataloader):
     return val_loss_ave
 
 
-def save_checkpoint(epoch, model_state_dict,optimizer_state_dict,loss,path):
+def save_checkpoint(epoch, model_state_dict, optimizer_state_dict, loss, path):
     pass
+
 
 def load_checkpoint(path):
     return torch.load(path)
