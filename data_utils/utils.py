@@ -30,11 +30,12 @@ def copy_iam_dataset_to_colab():
     print("Copying IAM Dataset from GDrive")
     GDRIVE_ROOT = connect_to_gdrive()
     GDRIVE_DATA_ROOT = Path(f"{GDRIVE_ROOT}/Datasets")
+    IAM_DIR = GDRIVE_DATA_ROOT / 'IAM_HW'
     DEST_DATA_ROOT = Path("/content/ssl_wordspotting/data")
     DEST_IAM_HW = DEST_DATA_ROOT / "IAM_HW"
     os.mkdir(DEST_DATA_ROOT)
     os.mkdir(DEST_IAM_HW)
-    SOURCE_FILES = [GDRIVE_DATA_ROOT / file for file in FILES_TO_COPY]
+    SOURCE_FILES = [IAM_DIR / file for file in FILES_TO_COPY]
     DEST_FILES = [DEST_IAM_HW / file for file in FILES_TO_COPY]
     for s, d in zip(SOURCE_FILES, DEST_FILES):
         shutil.copy(s, d)
