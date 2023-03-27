@@ -1,5 +1,6 @@
 import shutil
 import os
+import tarfile
 import zipfile
 from google.colab import drive
 from pathlib import Path
@@ -42,10 +43,13 @@ def copy_iam_dataset_to_colab():
         if not os.path.isfile(d):
             raise FileNotFoundError(f"{d} file not found")
         else:
-            print("IAM Dataset Zip now copied")
-
-        with zipfile.ZipFile(d, 'r') as zip_ref:
-            zip_ref.extractall(DEST_IAM_HW / d.name.split('.')[0])
+            print(f"{d} now copied")
+        if '.tgz' in d:
+            with tarfile.open(s) as archive_ref:
+                archive_ref.extractall(d.name.split('.')[0])
+        else:
+            with zipfile.ZipFile(d, 'r') as zip_ref:
+                zip_ref.extractall(DEST_IAM_HW / d.name.split('.')[0])
     print("Copied IAM HW Files")
 
 def copy_iehr_dataset_to_colab():
