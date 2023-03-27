@@ -1,5 +1,5 @@
 import pathlib
-
+import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 import os
 from PIL import Image
@@ -126,12 +126,12 @@ class IAMDataset2(Dataset):
         #
 
     def create_line_dirs(self):
-        ## images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
-        ## l1 -  sample_group_root_dir
-        ## l1-l2 - line_folders
-        ## rules : l1-l2-ldx - line_ids
-        ## xml file name: l1-l2.xml
-        ## xml : l1-l2-ldx-idx - sample_name
+        # images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
+        # l1 -  sample_group_root_dir
+        # l1-l2 - line_folders
+        # rules : l1-l2-ldx - line_ids
+        # xml file name: l1-l2.xml
+        # xml : l1-l2-ldx-idx - sample_name
         line_ids = self.read_line_ids()
         line_folders = [f"{i.split('-')[0]}-{i.split('-')[1]}" for i in line_ids]
         line_folders = list(dict.fromkeys(line_folders))
@@ -152,6 +152,11 @@ class IAMDataset2(Dataset):
         image_names = os.listdir(dir_path)
         return image_names
 
+    def get_random_samples(self, number=9):
+        random_samples = random.sample(self.samples, number)
+        random_samples = [(i[0], Image.open(i[0]), i[2]) for i in random_samples]
+        return random_samples
+
 
 if __name__ == "__main__":
     dataset = IAMDataset2(ttype='test')
@@ -159,3 +164,4 @@ if __name__ == "__main__":
     print(x)
     print(type(y))
     print(z)
+

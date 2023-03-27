@@ -4,12 +4,25 @@ import numpy as np
 import torch
 
 
-## Describe dataset
+# Describe dataset
 def describe_dataset(dataset, name='train'):
     print(f"{name} dataset has {len(dataset)} samples")
 
 
-## Plotting Few Samples
+# Plotting samples from IAMDataset2
+def plot_iam_samples(dataset, num_samples):
+    random_samples = dataset.get_random_samples(num_samples)
+    _, axs = plt.subplots(3, 3, figsize=(12, 12))
+    axs = axs.flatten()
+    for sample, ax in zip(random_samples, axs):
+        img = sample[1]
+        annotation = sample[2]
+        ax.imshow(img)
+        ax.title.set_text(f'Image Shape{annotation}, {img.size},{img.mode}')
+    plt.show()
+
+
+# Plotting Few Samples
 def plot_samples(dataset, num_samples):
     random_imgs = dataset.get_random_samples(num_samples)
     _, axs = plt.subplots(3, 3, figsize=(12, 12))
