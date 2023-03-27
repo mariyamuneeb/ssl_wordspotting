@@ -154,7 +154,6 @@ class IAMDataset2(Dataset):
 
     def get_random_samples(self, number=9):
         random_samples = random.sample(self.samples, number)
-        random_samples = [(i[0],Image.open())]
         return random_samples
 
 
