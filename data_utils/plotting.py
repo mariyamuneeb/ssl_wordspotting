@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from PIL import Image
 
-# Describe dataset
 
+# Describe dataset
 
 
 def describe_dataset(dataset, name='train'):
@@ -34,7 +34,9 @@ def plot_samples(dataset, num_samples):
         ax.imshow(img)
         ax.title.set_text(f'Image Shape {img.size},{img.mode}')
     plt.show()
-def plot_iam_reconstructions(encoder, decoder, test_dataset, device, dataset_name, n=10, )
+
+
+def plot_iam_reconstructions(encoder, decoder, test_dataset, device, dataset_name, n=10):
     wandb_imgs = list()
     wandb_rec_imgs = list()
     my_table = wandb.Table(columns=["Original", "Reconstruction"])
@@ -65,6 +67,8 @@ def plot_iam_reconstructions(encoder, decoder, test_dataset, device, dataset_nam
         wandb_rec_imgs.append(rec_img.cpu())
     plt.show()
     wandb.log({dataset_name: my_table})
+
+
 ## Plotting Samples During Training
 def plot_reconstructions(encoder, decoder, test_dataset, device, dataset_name, n=10, ):
     wandb_imgs = list()
