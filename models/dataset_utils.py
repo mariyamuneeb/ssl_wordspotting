@@ -1,6 +1,6 @@
 import pathlib
 # import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, Subset
 import os
 from PIL import Image
 import random
@@ -157,10 +157,21 @@ class IAMDataset2(Dataset):
         return random_samples
 
 
+class IAMSubset:
+    def subset(self, dataset, subset_fraction=0.1):
+        ll = len(dataset)
+
+        ss = [int(i / subset_fraction) for i in range(int(ll * subset_fraction))]
+        return Subset(dataset, ss)
+
+
 if __name__ == "__main__":
     dataset = IAMDataset2(ttype='test')
-    x, y,z = dataset[1]
+
+    subset = IAMSubset().subset(dataset)
+    x, y, z = dataset[1]
     print(x)
     print(y)
     print(z)
-
+    print(len(subset))
+    print(len(dataset))
