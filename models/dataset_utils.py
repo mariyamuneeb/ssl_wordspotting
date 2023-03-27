@@ -26,8 +26,8 @@ class BaseDataset(Dataset):
         return len(self.img_paths)
 
     def __getitem__(self, idx):
-        img_name = self.img_paths[idx]
-        image = Image.open(img_name)
+        img_path = self.img_paths[idx]
+        image = Image.open(img_path)
         if self.transform:
             image = self.transform(image)
         return image, 'na'
@@ -79,7 +79,7 @@ class IAMDataset2(Dataset):
 
     def __getitem__(self, idx):
         img_id, img_path, transcript = self.samples[idx]
-        img = Image.open(img_path)
+        img = Image.open(img_path).convert('RGB')
         if self.transform:
             img = self.transform(img)
         return img_id, img, transcript
@@ -172,6 +172,7 @@ if __name__ == "__main__":
     x, y, z = dataset[1]
     print(x)
     print(y)
+    print(type(y))
     print(z)
     print(len(subset))
     print(len(dataset))
