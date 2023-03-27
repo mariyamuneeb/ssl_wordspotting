@@ -35,7 +35,7 @@ def test_epoch(vae, device, dataloader):
     val_loss = 0.0
     # image re-construction
     with torch.no_grad():  # No need to track the gradients
-        for x, _ in dataloader:
+        for _, x, _ in dataloader:
             # Move tensor to the proper device
             x = x.to(device)
             # Encode data

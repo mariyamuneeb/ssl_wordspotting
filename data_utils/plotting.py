@@ -2,10 +2,9 @@ import matplotlib.pyplot as plt
 import wandb
 import numpy as np
 import torch
-
+from PIL import Image
 
 # Describe dataset
-from PIL.Image import Image
 
 
 def describe_dataset(dataset, name='train'):
