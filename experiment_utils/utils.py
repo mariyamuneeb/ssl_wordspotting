@@ -1,6 +1,9 @@
 import wandb
 import torch
 
+from experiment_utils.metrics import mean_average_precision
+
+
 def train_epoch(vae, device, dataloader, optimizer):
     # Set train mode for both the encoder and the decoder
     vae.train()
@@ -31,13 +34,14 @@ def test_epoch(vae, device, dataloader):
     vae.eval()
     val_loss = 0.0
     with torch.no_grad():  # No need to track the gradients
-        for x, _ in dataloader:
+        for x, transcripts in dataloader:
             # Move tensor to the proper device
             x = x.to(device)
             # Encode data
             encoded_data = vae.encoder(x)
             # Decode data
             x_hat = vae(x)
+            # batch_map = mean_average_precision(vae,x, y_test, transcripts)
             loss = ((x - x_hat) ** 2).sum() + vae.encoder.kl
             val_loss += loss.item()
     val_loss_ave = val_loss / len(dataloader.dataset)
@@ -45,8 +49,23 @@ def test_epoch(vae, device, dataloader):
     return val_loss_ave
 
 
-def save_checkpoint(epoch, model_state_dict,optimizer_state_dict,loss,path):
-    pass
+def save_checkpoint(epoch, model, optimizer, loss, path='last.pt'):
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss,
+    }, path)
+
+
+def load_checkpoint(model, optimizer, path):
+    checkpoint = torch.load(path)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    loss = checkpoint['loss']
+    return model
+
 
 def load_checkpoint(path):
     return torch.load(path)
