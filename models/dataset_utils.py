@@ -1,5 +1,5 @@
 import pathlib
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 import os
 from PIL import Image
@@ -154,7 +154,6 @@ class IAMDataset2(Dataset):
 
     def get_random_samples(self, number=9):
         random_samples = random.sample(self.samples, number)
-        random_samples = [(i[0], Image.open(i[0]), i[2]) for i in random_samples]
         return random_samples
 
 
@@ -162,6 +161,6 @@ if __name__ == "__main__":
     dataset = IAMDataset2(ttype='test')
     x, y,z = dataset[1]
     print(x)
-    print(type(y))
+    print(y)
     print(z)
 
