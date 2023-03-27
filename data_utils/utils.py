@@ -27,7 +27,7 @@ def connect_to_gdrive():
 
 
 def copy_iam_dataset_to_colab():
-    FILES_TO_COPY = ['words.tgz', "xml.tgz", "rules.rar"]
+    FILES_TO_COPY = ['words.tgz', "xml.tgz", "rules.zip"]
     print("Copying IAM Dataset from GDrive")
     GDRIVE_ROOT = connect_to_gdrive()
     GDRIVE_DATA_ROOT = Path(f"{GDRIVE_ROOT}/Datasets")
