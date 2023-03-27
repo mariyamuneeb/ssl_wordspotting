@@ -44,7 +44,7 @@ def copy_iam_dataset_to_colab():
             raise FileNotFoundError(f"{d} file not found")
         else:
             print(f"{d} now copied")
-        if '.tgz' in d:
+        if '.tgz' in d.name:
             with tarfile.open(s) as archive_ref:
                 archive_ref.extractall(d.name.split('.')[0])
         else:
