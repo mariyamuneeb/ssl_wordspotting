@@ -5,6 +5,9 @@ import torch
 
 
 # Describe dataset
+from PIL.Image import Image
+
+
 def describe_dataset(dataset, name='train'):
     print(f"{name} dataset has {len(dataset)} samples")
 
@@ -15,10 +18,10 @@ def plot_iam_samples(dataset, num_samples):
     _, axs = plt.subplots(3, 3, figsize=(12, 12))
     axs = axs.flatten()
     for sample, ax in zip(random_samples, axs):
-        img = sample[1]
+        img = Image.open(sample[1])
         annotation = sample[2]
         ax.imshow(img)
-        ax.title.set_text(f'Image Shape{annotation}, {img.size},{img.mode}')
+        ax.title.set_text(f'{annotation}, {img.size}, {img.mode}')
     plt.show()
 
 

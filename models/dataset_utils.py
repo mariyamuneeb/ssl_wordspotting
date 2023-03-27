@@ -79,7 +79,7 @@ class IAMDataset2(Dataset):
 
     def __getitem__(self, idx):
         img_id, img_path, transcript = self.samples[idx]
-        img = Image.open(img_path).convert('RGB')
+        img = Image.open(img_path)
         if self.transform:
             img = self.transform(img)
         return img_id, img, transcript
@@ -154,6 +154,7 @@ class IAMDataset2(Dataset):
 
     def get_random_samples(self, number=9):
         random_samples = random.sample(self.samples, number)
+        random_samples = [(i[0],Image.open())]
         return random_samples
 
 

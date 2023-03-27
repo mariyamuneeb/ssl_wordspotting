@@ -70,7 +70,6 @@ def copy_iehr_dataset_to_colab():
         zip_ref.extractall('/content/ssl_wordspotting/data')
 
 
-
 def get_images_paths(paths, dest):
     sumt = list()
     sumj = 0
