@@ -34,6 +34,7 @@ def copy_iam_dataset_to_colab():
     IAM_DIR = GDRIVE_DATA_ROOT / 'IAM_HW'
     DEST_DATA_ROOT = Path("/content/ssl_wordspotting/data")
     DEST_IAM_HW = DEST_DATA_ROOT / "IAM_HW"
+
     os.mkdir(DEST_DATA_ROOT)
     os.mkdir(DEST_IAM_HW)
     SOURCE_FILES = [IAM_DIR / file for file in FILES_TO_COPY]
@@ -45,11 +46,11 @@ def copy_iam_dataset_to_colab():
         else:
             print(f"{d} now copied")
         if '.tgz' in d.name:
-            with tarfile.open(s) as archive_ref:
-                archive_ref.extractall(d.name.split('.')[0])
+            with tarfile.open(d) as archive_ref:
+                archive_ref.extractall(DEST_IAM_HW / d.name.split('.')[0])
         else:
             with zipfile.ZipFile(d, 'r') as zip_ref:
-                zip_ref.extractall(DEST_IAM_HW / d.name.split('.')[0])
+                zip_ref.extractall(DEST_IAM_HW)
     print("Copied IAM HW Files")
 
 def copy_iehr_dataset_to_colab():
