@@ -45,8 +45,8 @@ class BaseDataset(Dataset):
 #
 class IAMDataset(BaseDataset):
     """
-    train_root_dir = '/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/words_training'
-    test_root_dir = '/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/words_test'
+    train_root_dir = '/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/words_training'
+    test_root_dir = '/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/words_test'
     train_dataset = IAMDataset(train_root_dir)
     test_dataset = IAMDataset(test_root_dir)
     """

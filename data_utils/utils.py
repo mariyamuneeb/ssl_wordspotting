@@ -1,17 +1,19 @@
 import shutil
 import os
+import tarfile
 import zipfile
 from google.colab import drive
+from pathlib import Path
 
 CWD = os.getcwd()
 print(CWD)
-IEHR = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR"
+IEHR = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR"
 IEHR3 = f"{IEHR}/IEHHR_training_part3"
 IEHR2 = f"{IEHR}/IEHHR_training_part2"
 IEHR1 = f"{IEHR}/IEHHR_training_part1"
 IEHRTest = f"{IEHR}/IEHHR_test"
-DESTR = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/full_dataset"
-DESTE = "/home/mujahid/PycharmProjects/ssl_wordspotting/datasets/IEHR/full_dataset_test"
+DESTR = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/full_dataset"
+DESTE = "/home/mujahid/PycharmProjects/ssl_wordspotting/data/IEHR/full_dataset_test"
 
 IEHRTR = [IEHR1, IEHR2, IEHR3]
 IEHRTE = [IEHRTest]
@@ -25,8 +27,35 @@ def connect_to_gdrive():
 
 
 def copy_iam_dataset_to_colab():
-    ## copied IAM Dataset from Gdrive to colab
+    FILES_TO_COPY = ['words.tgz', "xml.tgz", "rules.zip"]
     print("Copying IAM Dataset from GDrive")
+    GDRIVE_ROOT = connect_to_gdrive()
+    GDRIVE_DATA_ROOT = Path(f"{GDRIVE_ROOT}/Datasets")
+    IAM_DIR = GDRIVE_DATA_ROOT / 'IAM_HW'
+    DEST_DATA_ROOT = Path("/content/ssl_wordspotting/data")
+    DEST_IAM_HW = DEST_DATA_ROOT / "IAM_HW"
+
+    os.mkdir(DEST_DATA_ROOT)
+    os.mkdir(DEST_IAM_HW)
+    SOURCE_FILES = [IAM_DIR / file for file in FILES_TO_COPY]
+    DEST_FILES = [DEST_IAM_HW / file for file in FILES_TO_COPY]
+    for s, d in zip(SOURCE_FILES, DEST_FILES):
+        shutil.copy(s, d)
+        if not os.path.isfile(d):
+            raise FileNotFoundError(f"{d} file not found")
+        else:
+            print(f"{d} now copied")
+        if '.tgz' in d.name:
+            with tarfile.open(d) as archive_ref:
+                archive_ref.extractall(DEST_IAM_HW / d.name.split('.')[0])
+        else:
+            with zipfile.ZipFile(d, 'r') as zip_ref:
+                zip_ref.extractall(DEST_IAM_HW)
+    print("Copied IAM HW Files")
+
+def copy_iehr_dataset_to_colab():
+    ## copy IEHR Dataset from Gdrive to colab
+    print("Copying IEHR Dataset from GDrive")
     GDRIVE_ROOT = connect_to_gdrive()
     DATASET_ROOT = f"{GDRIVE_ROOT}/Datasets"
     dataset_zip = f'{DATASET_ROOT}/IEHR/words_full_dataset.zip'
@@ -39,6 +68,7 @@ def copy_iam_dataset_to_colab():
     os.mkdir('/content/ssl_wordspotting/iam_data')
     with zipfile.ZipFile(dest_zip, 'r') as zip_ref:
         zip_ref.extractall('/content/ssl_wordspotting/data')
+
 
 
 def get_images_paths(paths, dest):
@@ -62,16 +92,3 @@ def get_images_paths(paths, dest):
     print(sumt)
     print(sum(sumt))
     print(f"copied {sumj} images")
-
-
-
-
-
-
-
-
-
-
-
-
-
