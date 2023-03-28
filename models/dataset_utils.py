@@ -86,6 +86,8 @@ class IAMDataset2(Dataset):
             return img_id, img, transcript
         except Exception as e:
             print(e)
+            img_id, img_path, transcript = self.samples[idx-1]
+            return img_id, img, transcript
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
