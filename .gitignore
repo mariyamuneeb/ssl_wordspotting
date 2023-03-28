@@ -3,3 +3,5 @@ data/*
 models/__pycache__
 wandb
 .ipynb_checkpoints
+*.pyc
+__pycache__/paths.cpython-39.pyc

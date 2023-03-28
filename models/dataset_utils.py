@@ -1,8 +1,8 @@
 import pathlib
-
-from torch.utils.data import Dataset, DataLoader
+# import matplotlib.pyplot as plt
+from torch.utils.data import Dataset, DataLoader, Subset
 import os
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import random
 # import pathlib
 import logging
@@ -26,8 +26,8 @@ class BaseDataset(Dataset):
         return len(self.img_paths)
 
     def __getitem__(self, idx):
-        img_name = self.img_paths[idx]
-        image = Image.open(img_name)
+        img_path = self.img_paths[idx]
+        image = Image.open(img_path)
         if self.transform:
             image = self.transform(image)
         return image, 'na'
@@ -79,10 +79,15 @@ class IAMDataset2(Dataset):
 
     def __getitem__(self, idx):
         img_id, img_path, transcript = self.samples[idx]
-        img = Image.open(img_path)
-        if self.transform:
-            img = self.transform(img)
-        return img_id, img, transcript
+        try:
+            img = Image.open(img_path)
+            if self.transform:
+                img = self.transform(img)
+            return img_id, img, transcript
+        except Exception as e:
+            print(e)
+            img_id, img_path, transcript = self.samples[idx-1]
+            return img_id, img, transcript
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
@@ -126,12 +131,12 @@ class IAMDataset2(Dataset):
         #
 
     def create_line_dirs(self):
-        ## images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
-        ## l1 -  sample_group_root_dir
-        ## l1-l2 - line_folders
-        ## rules : l1-l2-ldx - line_ids
-        ## xml file name: l1-l2.xml
-        ## xml : l1-l2-ldx-idx - sample_name
+        # images : words/l1/l1-l2/l1-l2-ldx-idx.png : sample
+        # l1 -  sample_group_root_dir
+        # l1-l2 - line_folders
+        # rules : l1-l2-ldx - line_ids
+        # xml file name: l1-l2.xml
+        # xml : l1-l2-ldx-idx - sample_name
         line_ids = self.read_line_ids()
         line_folders = [f"{i.split('-')[0]}-{i.split('-')[1]}" for i in line_ids]
         line_folders = list(dict.fromkeys(line_folders))
@@ -152,10 +157,27 @@ class IAMDataset2(Dataset):
         image_names = os.listdir(dir_path)
         return image_names
 
+    def get_random_samples(self, number=9):
+        random_samples = random.sample(self.samples, number)
+        return random_samples
+
+
+class IAMSubset:
+    def subset(self, dataset, subset_fraction=0.1):
+        ll = len(dataset)
+
+        ss = [int(i / subset_fraction) for i in range(int(ll * subset_fraction))]
+        return Subset(dataset, ss)
+
 
 if __name__ == "__main__":
     dataset = IAMDataset2(ttype='test')
-    x, y,z = dataset[1]
+
+    subset = IAMSubset().subset(dataset)
+    x, y, z = dataset[1]
     print(x)
+    print(y)
     print(type(y))
     print(z)
+    print(len(subset))
+    print(len(dataset))
