@@ -2,7 +2,7 @@ import pathlib
 # import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader, Subset
 import os
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import random
 # import pathlib
 import logging
@@ -79,10 +79,15 @@ class IAMDataset2(Dataset):
 
     def __getitem__(self, idx):
         img_id, img_path, transcript = self.samples[idx]
-        img = Image.open(img_path)
-        if self.transform:
-            img = self.transform(img)
-        return img_id, img, transcript
+        try:
+            img = Image.open(img_path)
+            if self.transform:
+                img = self.transform(img)
+                return img_id, img, transcript
+        except Exception as e:
+            print(e)
+
+
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
