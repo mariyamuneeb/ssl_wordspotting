@@ -1,5 +1,6 @@
 import wandb
 import torch
+import numpy as np
 
 
 def train_epoch(vae, device, dataloader, optimizer):
@@ -27,6 +28,18 @@ def train_epoch(vae, device, dataloader, optimizer):
     return train_loss_ave
 
 
+def evaluate(vae, latent_dim,device, dataloader):
+    model = vae.encoder()
+    embedding_size = latent_dim
+    embeddings = np.zeros((len(dataloader),embedding_size),dtype = np.float32)
+    outputs = np.zeros((len(dataloader),embedding_size),dtype = np.float32)
+    
+    for sample_idx, (img_id, img, transcript) in enumerate(dataloader):
+        output = torch.sigmoid(vae.encoder(img))
+        outputs[sample_idx] = output.data.cpu().numpy().flatten()
+
+
+
 def test_epoch(vae, device, dataloader):
     # Set evaluation mode for encoder and decoder
     # reconstruct image
@@ -48,7 +61,6 @@ def test_epoch(vae, device, dataloader):
     wandb.log({"val_loss": val_loss_ave})
     # todo calculate mAP
     return val_loss_ave
-
 
 
 def save_checkpoint(epoch, model_state_dict, optimizer_state_dict, loss, path):

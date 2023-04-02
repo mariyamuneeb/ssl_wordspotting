@@ -1,5 +1,6 @@
 import pathlib
 # import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset, DataLoader, Subset
 import os
 from PIL import Image, UnidentifiedImageError
@@ -62,6 +63,7 @@ class IAMDataset(BaseDataset):
 
 class IAMDataset2(Dataset):
     def __init__(self, ttype, transform=None):
+        self.label_encoder = None
         self.transform = transform
         self.ttype = ttype
         if ttype == 'train':
@@ -72,41 +74,50 @@ class IAMDataset2(Dataset):
             self.rule_file_path = IAM_RULE_DIR / "validationset1.txt"
         self.line_folders = None
         self.line_folders, self.line_dirs = self.create_line_dirs()
-        self.samples = self.get_word_transcripts()
+        self.samples, self.labels = self.get_word_labels()
+        self.labels_encoder()
+
+    def unique_word_labels(self):
+        labels = list(set(self.labels))
+        return labels
+
+    def labels_encoder(self):
+        labels = self.unique_word_labels()
+        self.label_encoder = LabelEncoder()
+        self.label_encoder.fit([elem[1] for elem in labels])
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        img_id, img_path, transcript = self.samples[idx]
-        try:
-            img = Image.open(img_path)
-            if self.transform:
-                img = self.transform(img)
-            return img_id, img, transcript
-        except Exception as e:
-            print(e)
-            img_id, img_path, transcript = self.samples[idx-1]
-            return img_id, img, transcript
+        img_id, img_path, label,_ = self.samples[idx]
+        encoded_label = self.label_encoder.transofrm(label)
+        img = Image.open(img_path)
+        if self.transform:
+            img = self.transform(img)
+        return img_id, img, label,encoded_label
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
         root = tree.getroot()
         return root
 
-    def get_word_transcripts(self):
+    def get_word_labels(self):
         word_ids, word_paths = self.get_words()
 
         word_ids, xml_paths = self.construct_xml_file_paths(word_ids)
         ll = list()
+        labels = list()
         for word_id, word_path, xml_path in zip(word_ids, word_paths, xml_paths):
             root = self.get_xml_file_object(xml_path)
             for word in root.iter('word'):
                 img_id = word.get('id')
                 if img_id == word_id:
-                    transcript = word.get('text')
-                    ll.append((word_id, word_path, transcript))
-        return ll
+                    label = word.get('text')
+                    ll.append((word_id, word_path, label))
+                    labels.append(label)
+
+        return ll, labels
 
     def construct_xml_file_paths(self, word_ids):
         xml_paths = ['-'.join(i.split('-')[:-2]) + '.xml' for i in word_ids]
