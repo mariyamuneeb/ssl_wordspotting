@@ -64,6 +64,7 @@ class IAMDataset(BaseDataset):
 class IAMDataset2(Dataset):
     def __init__(self, ttype, transform=None):
         self.label_encoder = None
+        self.query_list = None
         self.transform = transform
         self.ttype = ttype
         if ttype == 'train':
@@ -74,28 +75,38 @@ class IAMDataset2(Dataset):
             self.rule_file_path = IAM_RULE_DIR / "validationset1.txt"
         self.line_folders = None
         self.line_folders, self.line_dirs = self.create_line_dirs()
-        self.samples, self.labels = self.get_word_labels()
+        self.samples, self.word_strings = self.get_word_labels()
         self.labels_encoder()
 
-    def unique_word_labels(self):
-        labels = list(set(self.labels))
-        return labels
+    def get_unique_word_strings(self):
+        unique_word_strings, counts = np.unique(self.word_strings, return_counts=True)
+        return unique_word_strings, counts
+
+    def get_query_list(self):
+        if self.ttype == 'test':
+            unique_word_strings, counts = self.get_unique_word_strings()
+            qry_word_ids = unique_word_strings[np.where(counts > 1)[0]]
+            query_list = np.zeros(len(self.word_strings), np.int8)
+            qry_ids = [i for i in range(len(self.word_strings)) if self.word_strings[i] in qry_word_ids]
+            query_list[qry_ids] = 1
+            self.query_list = query_list
 
     def labels_encoder(self):
-        labels = self.unique_word_labels()
+        labels, _ = self.get_unique_word_strings()
         self.label_encoder = LabelEncoder()
-        self.label_encoder.fit([elem[1] for elem in labels])
+        self.label_encoder.fit(labels)
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        img_id, img_path, label,_ = self.samples[idx]
-        encoded_label = self.label_encoder.transofrm(label)
+        img_id, img_path, label = self.samples[idx]
+        encoded_label = self.label_encoder.transform([label])
         img = Image.open(img_path)
         if self.transform:
             img = self.transform(img)
-        return img_id, img, label,encoded_label
+        is_query = self.query_list[idx]
+        return img_id, img, label, encoded_label[0], is_query
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)

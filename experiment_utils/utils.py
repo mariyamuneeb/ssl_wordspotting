@@ -1,6 +1,9 @@
+import logging
+
 import wandb
 import torch
 import numpy as np
+from tqdm import tqdm
 
 
 def train_epoch(vae, device, dataloader, optimizer):
@@ -28,16 +31,71 @@ def train_epoch(vae, device, dataloader, optimizer):
     return train_loss_ave
 
 
-def evaluate(vae, latent_dim,device, dataloader):
+def evaluate_model(model, dataset_loader, args):
+    logger = logging.getLogger('Experiment::test')
+    # set the CNN in eval mode
+    model.eval()
+    logger.info('Computing net output:')
+    qry_ids = []  # np.zeros(len(dataset_loader), dtype=np.int32)
+    class_ids = np.zeros(len(dataset_loader), dtype=np.int32)
+    embedding_size = dataset_loader.dataset.embedding_size()
+    embeddings = np.zeros((len(dataset_loader), embedding_size), dtype=np.float32)
+    outputs = np.zeros((len(dataset_loader), embedding_size), dtype=np.float32)
+    for sample_idx, (img_id, img, label, class_id, is_query) in enumerate(tqdm(dataset_loader)):
+        if args.gpu_id is not None:
+            # in one gpu!!
+            word_img = img.cuda(args.gpu_id[0])
+            # embedding = embedding.cuda(args.gpu_id[0])
+            # word_img, embedding = word_img.cuda(args.gpu_id), embedding.cuda(args.gpu_id)
+        word_img = torch.autograd.Variable(img)
+        # embedding = torch.autograd.Variable(embedding)
+
+        output = torch.sigmoid(model(word_img))
+        # output = cnn(word_img)
+        outputs[sample_idx] = output.data.cpu().numpy().flatten()
+        # embeddings[sample_idx] = embedding.data.cpu().numpy().flatten()
+        class_ids[sample_idx] = class_id.numpy()[0, 0]
+        if is_query[0] == 1:
+            qry_ids.append(sample_idx)  # [sample_idx] = is_query[0]
+
+    '''
+    # find queries
+    unique_class_ids, counts = np.unique(class_ids, return_counts=True)
+    qry_class_ids = unique_class_ids[np.where(counts > 1)[0]]
+    # remove stopwords if needed
+
+    qry_ids = [i for i in range(len(class_ids)) if class_ids[i] in qry_class_ids]
+    '''
+
+    qry_outputs = outputs[qry_ids][:]
+    qry_class_ids = class_ids[qry_ids]
+
+    # run word spotting
+    logger.info('Computing mAPs...')
+
+    ave_precs_qbe = map_from_query_test_feature_matrices(query_features=qry_outputs,
+                                                         test_features=outputs,
+                                                         query_labels=qry_class_ids,
+                                                         test_labels=class_ids,
+                                                         metric='cosine',
+                                                         drop_first=True)
+
+    logger.info('mAP: %3.2f', np.mean(ave_precs_qbe[ave_precs_qbe > 0]) * 100)
+
+    # clean up -> set CNN in train mode again
+    model.train()
+
+
+def evaluate(vae, latent_dim, device, dataloader):
     model = vae.encoder()
     embedding_size = latent_dim
-    embeddings = np.zeros((len(dataloader),embedding_size),dtype = np.float32)
-    outputs = np.zeros((len(dataloader),embedding_size),dtype = np.float32)
-    
-    for sample_idx, (img_id, img, transcript) in enumerate(dataloader):
+    embeddings = np.zeros((len(dataloader), embedding_size), dtype=np.float32)
+    outputs = np.zeros((len(dataloader), embedding_size), dtype=np.float32)
+    class_ids = np.zeros(len(dataset_loader), dtype=np.int32)
+    for sample_idx, (img_id, img, transcript, class_id) in enumerate(dataloader):
         output = torch.sigmoid(vae.encoder(img))
         outputs[sample_idx] = output.data.cpu().numpy().flatten()
-
+        class_ids[sample_idx] = class_id
 
 
 def test_epoch(vae, device, dataloader):

@@ -164,3 +164,6 @@ class MeanAveragePrecision(IterativeMean):
         super(MeanAveragePrecision, self).add_value(ret_vec_ap)
 
         return ret_vec_ap
+
+
+
