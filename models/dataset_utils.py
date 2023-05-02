@@ -90,12 +90,12 @@ class IAMDataset2(Dataset):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        img_id, img_path, label,_ = self.samples[idx]
+        img_id, img_path, label, _ = self.samples[idx]
         encoded_label = self.label_encoder.transofrm(label)
         img = Image.open(img_path)
         if self.transform:
             img = self.transform(img)
-        return img_id, img, label,encoded_label
+        return img_id, img, label, encoded_label
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
