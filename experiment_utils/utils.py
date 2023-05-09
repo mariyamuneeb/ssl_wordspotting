@@ -74,11 +74,11 @@ def test_epoch(vae, device, dataloader):
     val_loss = 0.0
     # image re-construction
     with torch.no_grad():  # No need to track the gradients
-        for _, x, _ in dataloader:
+        for _, x, _, _ in dataloader:
             # Move tensor to the proper device
             x = x.to(device)
             # Encode data
-            encoded_data = vae.encoder(x)
+            # encoded_data = vae.encoder(x)
             # Decode data
             x_hat = vae(x)
             loss = ((x - x_hat) ** 2).sum() + vae.encoder.kl
@@ -86,7 +86,7 @@ def test_epoch(vae, device, dataloader):
     val_loss_ave = val_loss / len(dataloader.dataset)
     wandb.log({"val_loss": val_loss_ave})
     # todo calculate mAP
-    mean_average_precision(vae, x_test, y_test, transcripts)
+    # mean_average_precision(vae, x_test, y_test, transcripts)
     return val_loss_ave
 
 
