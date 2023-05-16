@@ -13,7 +13,7 @@ def train_epoch(vae, device, dataloader, optimizer):
     vae.train()
     train_loss = 0.0
     # Iterate the dataloader (we do not need the label values, this is unsupervised learning)
-    for _, x, _ in dataloader:
+    for _, x, _, _ in dataloader:
         # Move tensor to the proper device
         x = x.to(device)
         x_hat = vae(x)
