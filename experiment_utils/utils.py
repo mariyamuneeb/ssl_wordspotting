@@ -5,6 +5,8 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
+from experiment_utils.metrics import map_from_feature_matrix
+
 
 def train_epoch(vae, device, dataloader, optimizer):
     # Set train mode for both the encoder and the decoder
@@ -86,8 +88,7 @@ def evaluate_model(model, dataset_loader, args):
     model.train()
 
 
-def evaluate(vae, latent_dim, device, dataloader):
-    model = vae.encoder()
+def evaluate_qbe(model, latent_dim, device, dataloader):
     embedding_size = latent_dim
     embeddings = np.zeros((len(dataloader), embedding_size), dtype=np.float32)
     outputs = np.zeros((len(dataloader), embedding_size), dtype=np.float32)
@@ -104,21 +105,32 @@ def test_epoch(vae, device, dataloader):
     # calculate mAP
     vae.eval()
     val_loss = 0.0
-    # image re-construction
+    features_list = list()
+    labels_list = list()
+    # image re-construction & mAP
+
     with torch.no_grad():  # No need to track the gradients
-        for _, x, _ in dataloader:
+        for _, img, labels, _ in dataloader:
             # Move tensor to the proper device
-            x = x.to(device)
+            img = img.to(device)
             # Encode data
-            encoded_data = vae.encoder(x)
+            feature = vae.encoder(img)
+            feature = torch.squeeze(feature)
+            feature = feature.cpu().detach().numpy()
+            features_list.append(feature)
+            labels_list.append(list(labels))
             # Decode data
-            x_hat = vae(x)
-            loss = ((x - x_hat) ** 2).sum() + vae.encoder.kl
+            img_hat = vae(img)
+            loss = ((img - img_hat) ** 2).sum() + vae.encoder.kl
             val_loss += loss.item()
+    feature_array = np.concatenate(features_list)
+    labels_list = [item for sublist in labels_list for item in sublist]
+    mean_ap, _ = map_from_feature_matrix(feature_array, labels_list, 'euclidean', True)
     val_loss_ave = val_loss / len(dataloader.dataset)
     wandb.log({"val_loss": val_loss_ave})
+    wandb.log({"mAP": mean_ap})
     # todo calculate mAP
-    return val_loss_ave
+    return val_loss_ave, mean_ap
 
 
 def save_checkpoint(epoch, model_state_dict, optimizer_state_dict, loss, path):
