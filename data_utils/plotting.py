@@ -43,7 +43,7 @@ def plot_iam_reconstructions(encoder, decoder, test_dataset, device, dataset_nam
     plt.figure(figsize=(16, 4.5))
     for i in range(n):
         ax = plt.subplot(2, n, i + 1)
-        _, img, _ = test_dataset[i]
+        _, img, _, _ = test_dataset[i]
         img = img.unsqueeze(0).to(device)
         encoder.eval()
         decoder.eval()

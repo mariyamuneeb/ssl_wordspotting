@@ -4,12 +4,6 @@
 # Author: Pinaki Nath Chowdhury <pinakinathc@gmail.com>
 
 import numpy as np
-import pandas as pd
-import tensorflow as tf
-import keras
-
-from load_data import load_data
-from save_load_weight import *
 from datetime import datetime
 
 from scipy.spatial.distance import pdist, squareform

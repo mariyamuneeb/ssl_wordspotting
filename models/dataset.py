@@ -105,8 +105,9 @@ class IAMDataset2(Dataset):
         img = Image.open(img_path)
         if self.transform:
             img = self.transform(img)
-        is_query = self.query_list[idx]
-        return img_id, img, label, encoded_label[0], is_query
+        # is_query = self.query_list[idx]
+        # return img_id, img, label, encoded_label[0], is_query
+        return img_id, img, label, encoded_label[0]
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
