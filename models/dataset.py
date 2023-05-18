@@ -102,12 +102,24 @@ class IAMDataset2(Dataset):
     def __getitem__(self, idx):
         img_id, img_path, label = self.samples[idx]
         encoded_label = self.label_encoder.transform([label])
-        img = Image.open(img_path)
-        if self.transform:
-            img = self.transform(img)
+        try:
+            img = Image.open(img_path)
+            if self.transform:
+                img = self.transform(img)
         # is_query = self.query_list[idx]
         # return img_id, img, label, encoded_label[0], is_query
+
+        except:
+            img_id, img_path, label = self.samples[0]
+            label = 'error'
+            encoded_label = self.label_encoder.transform([label])
+            img = Image.open(img_path)
+            if self.transform:
+                img = self.transform(img)
+
         return img_id, img, label, encoded_label[0]
+
+
 
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
