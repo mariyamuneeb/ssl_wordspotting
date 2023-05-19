@@ -193,7 +193,10 @@ class IAMDataset2(Dataset):
         return image_names
 
     def get_random_samples(self, number=9):
+
         random_samples = random.sample(self.samples, number)
+        random_samples = [(Image.open(sample[1]),sample[2]) for sample in random_samples]
+        random_samples = [(self.transform(sample[0],sample[1])) for sample in random_samples]
         return random_samples
 
 

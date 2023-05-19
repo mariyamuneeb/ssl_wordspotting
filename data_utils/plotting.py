@@ -18,8 +18,9 @@ def plot_iam_samples(dataset, num_samples):
     _, axs = plt.subplots(3, 3, figsize=(12, 12))
     axs = axs.flatten()
     for sample, ax in zip(random_samples, axs):
-        img = Image.open(sample[1])
-        annotation = sample[2]
+        # img = Image.open(sample[1])
+        img = sample[0]
+        annotation = sample[1]
         ax.imshow(img)
         ax.title.set_text(f'{annotation}, {img.size}, {img.mode}')
     plt.show()
