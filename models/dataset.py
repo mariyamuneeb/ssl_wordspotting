@@ -119,14 +119,12 @@ class IAMDataset2(Dataset):
 
         return img_id, img, label, encoded_label[0]
 
-
-
     def get_xml_file_object(self, path):
         tree = ET.parse(path)
         root = tree.getroot()
         return root
 
-    def get_word_labels(self):
+    def get_word_labels(self,ignore_length=2):
         word_ids, word_paths = self.get_words()
 
         word_ids, xml_paths = self.construct_xml_file_paths(word_ids)
@@ -138,8 +136,10 @@ class IAMDataset2(Dataset):
                 img_id = word.get('id')
                 if img_id == word_id:
                     label = word.get('text')
-                    ll.append((word_id, word_path, label))
-                    labels.append(label)
+                    len_label = len(label)
+                    if len_label > ignore_length:
+                        ll.append((word_id, word_path, label))
+                        labels.append(label)
 
         return ll, labels
 
@@ -195,8 +195,8 @@ class IAMDataset2(Dataset):
     def get_random_samples(self, number=9):
 
         random_samples = random.sample(self.samples, number)
-        random_samples = [(Image.open(sample[1]),sample[2]) for sample in random_samples]
-        random_samples = [(self.transform(sample[0]),sample[1]) for sample in random_samples]
+        random_samples = [(Image.open(sample[1]), sample[2]) for sample in random_samples]
+        random_samples = [(self.transform(sample[0]), sample[1]) for sample in random_samples]
         return random_samples
 
 
@@ -206,6 +206,48 @@ class IAMSubset:
 
         ss = [int(i / subset_fraction) for i in range(int(ll * subset_fraction))]
         return Subset(dataset, ss)
+
+
+class BinaryThresholdTransform(object):
+    def __init__(self, threshold=100):
+        self.threshold = threshold
+
+    def __call__(self, image: Image.Image) -> Image.Image:
+        image = image.point(lambda pixel: 0 if pixel < self.threshold else 255, '1')
+        return image
+
+
+class ResizeAndPadTransform(object):
+    def __init__(self, max_dimension):
+        self.max_dimension = max_dimension
+
+    def __call__(self, image: Image.Image) -> Image.Image:
+        original_width, original_height = image.size
+
+        # Calculate the aspect ratio
+        aspect_ratio = original_width / original_height
+
+        # Determine the new width and height
+        if original_width > original_height:
+            new_width = self.max_dimension
+            new_height = int(self.max_dimension / aspect_ratio)
+        else:
+            new_height = self.max_dimension
+            new_width = int(self.max_dimension * aspect_ratio)
+
+        # Resize the image while maintaining the aspect ratio
+        resized_image = image.resize((new_width, new_height), Image.ANTIALIAS)
+
+        # Create a new square image with white background
+        square_image = Image.new('L', (self.max_dimension, self.max_dimension), 255)
+
+        # Calculate the position to paste the resized image
+        x_offset = (self.max_dimension - new_width) // 2
+        y_offset = (self.max_dimension - new_height) // 2
+
+        # Paste the resized image onto the square image
+        square_image.paste(resized_image, (x_offset, y_offset))
+        return square_image
 
 
 if __name__ == "__main__":
