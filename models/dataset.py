@@ -62,7 +62,8 @@ class IAMDataset(BaseDataset):
 
 
 class IAMDataset2(Dataset):
-    def __init__(self, ttype, transform=None):
+    def __init__(self, ttype, stop_words=False, transform=None):
+        self.stop_words = stop_words
         self.label_encoder = None
         self.query_list = None
         self.transform = transform
@@ -124,7 +125,7 @@ class IAMDataset2(Dataset):
         root = tree.getroot()
         return root
 
-    def get_word_labels(self,ignore_length=2):
+    def get_word_labels(self):
         word_ids, word_paths = self.get_words()
 
         word_ids, xml_paths = self.construct_xml_file_paths(word_ids)
@@ -137,9 +138,14 @@ class IAMDataset2(Dataset):
                 if img_id == word_id:
                     label = word.get('text')
                     len_label = len(label)
-                    if len_label > ignore_length:
+                    if self.stop_words:
+                        if len_label > 2:
+                            ll.append((word_id, word_path, label))
+                            labels.append(label)
+                    else:
                         ll.append((word_id, word_path, label))
                         labels.append(label)
+
 
         return ll, labels
 
